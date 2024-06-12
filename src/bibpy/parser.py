@@ -1,5 +1,6 @@
 
-from model import Entry, Element
+from bibpy.model import Element, Entry
+
 
 def next_element(text: str) -> "tuple[Element, str]":
     key, remainder = map(str.strip, text.split("=", 1))
@@ -33,20 +34,18 @@ def parse_entry(text: str) -> "Entry":
         elements[element.key] = element.value
 
     if remainder != "":
-        msg = "Expected empty remainder, got %s" % remainder
+        msg = f"Expected empty remainder, got {remainder}"
         raise ValueError(msg)
 
     entry = Entry(category=category, key=key, issn=elements.pop("issn"))
 
     for key, value in elements.items():
+        parsed_value: str | int | tuple[str, ...] = value
         if key in ("year",):
-            try:
-                value = int(value)
-            except ValueError:
-                pass
+            parsed_value = int(value)
         elif key in ("author", "editor"):
-            value = tuple(map(str.strip, value.split("and")))
+            parsed_value = tuple(map(str.strip, value.split("and")))
         elif key == "keywords":
-            value = tuple(map(str.strip, value.split(",")))
-        setattr(entry, key, value)
+            parsed_value = tuple(map(str.strip, value.split(",")))
+        setattr(entry, key, parsed_value)
     return entry

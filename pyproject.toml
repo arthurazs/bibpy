@@ -1,0 +1,20 @@
+[project]
+name = "bibpy"
+version = "0.0.1"
+
+[project.optional-dependencies]
+dev = [
+    "ruff == 0.4.8",
+    "mypy == 1.10.0",
+]
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = ["D203", "D213", "FA102"]
+extend-ignore = ["D"]
+
+[tool.mypy]
+strict = true
+show_error_codes = true
+enable_error_code = "ignore-without-code"
+exclude = ["build"]

@@ -1,5 +1,6 @@
-
 from dataclasses import dataclass
+
+
 @dataclass(slots=True)
 class Entry:
     category: str
@@ -22,14 +23,14 @@ class Entry:
     editor: list[str] | None = None
 
     def __str__(self: "Entry") -> str:
-        entry = "@%s{%s,\n" % (self.category, self.key)
-        entry += "issn = {%s},\n" % (self.issn)
+        entry = "@%s{%s,\n" % (self.category, self.key)  # noqa: UP031
+        entry += "issn = {%s},\n" % (self.issn)  # noqa: UP031
         for attr in dir(self):
             if attr[:2] == "__":
                 continue
             if attr in ("category", "key", "issn"):
                 continue
-            
+
             value = getattr(self, attr)
             if value is None:
                 continue
@@ -39,7 +40,7 @@ class Entry:
             elif attr == "keywords":
                 value = attr + " = {" + ", ".join(value) + "},\n"
             else:
-                entry += attr + " = {%s},\n" % value
+                entry += attr + " = {%s},\n" % value  # noqa: UP031
         entry = entry.removesuffix(",\n")
         return entry + "\n}\n"
 
