@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 def merge(input_path: "Path", output_file: "Path") -> None:
+    # TODO @arthurazs: use load_entries
     entries = {}
     duplicate = 0
     logger.info("Iterating over %s...", input_path)

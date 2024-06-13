@@ -1,6 +1,8 @@
 import logging
+import sys
 from pathlib import Path
 
+from bibpy.analyser import analyse
 from bibpy.merger import merge
 
 INPUT_PATH = Path("input")
@@ -17,5 +19,7 @@ logging.basicConfig(
 )
 
 
-merge(INPUT_PATH / SCIENCE_DIRECT, (OUTPUT_PATH / SCIENCE_DIRECT).with_suffix(".bib") )
-
+if sys.argv[1] == "-m":
+    merge(INPUT_PATH / SCIENCE_DIRECT, (OUTPUT_PATH / SCIENCE_DIRECT).with_suffix(".bib") )
+else:
+    analyse((OUTPUT_PATH / SCIENCE_DIRECT).with_suffix(".bib"))
