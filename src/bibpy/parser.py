@@ -40,12 +40,6 @@ def parse_entry(text: str) -> "Entry":
     entry = Entry(category=category, key=key, issn=elements.pop("issn"))
 
     for key, value in elements.items():
-        parsed_value: str | int | tuple[str, ...] = value
-        if key in ("year",):
-            parsed_value = int(value)
-        elif key in ("author", "editor"):
-            parsed_value = tuple(map(str.strip, value.split("and")))
-        elif key == "keywords":
-            parsed_value = tuple(map(str.strip, value.split(",")))
-        setattr(entry, key, parsed_value)
+        setattr(entry, key, entry.parse_value(key, value))
     return entry
+

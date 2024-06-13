@@ -8,6 +8,9 @@ dev = [
     "mypy == 1.10.0",
 ]
 
+[tool.ruff]
+line-length = 120
+
 [tool.ruff.lint]
 select = ["ALL"]
 ignore = ["D203", "D213", "FA102"]

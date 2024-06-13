@@ -15,32 +15,61 @@ class Entry:
     series: str | None = None
     publisher: str | None = None
     abstract: str | None = None
-    volume: int | str | None = None
+    volume: str | None = None
     year: int | None = None
-    number: int | None = None
-    author: list[str] | None = None
-    keywords: list[str] | None = None
-    editor: list[str] | None = None
+    number: str | None = None
+    author: tuple[str] | None = None
+    keywords: tuple[str] | None = None
+    editor: tuple[str] | None = None
+
+    @property
+    def code(self: "Entry") -> str:
+        return self.key + self.issn
+
+    @staticmethod
+    def parse_value(key: str, value: str) -> str | int | tuple[str, ...]:
+        if key in ("author", "editor"):
+            return tuple(map(str.strip, value.split(" and ")))
+        if key in ("keywords", ):
+            return tuple(map(str.strip, value.split(",")))
+        if key in ("year", ):
+            return int(value)
+        return value
+
+    @staticmethod
+    def value2string(key: str, value: str | tuple[str, ...] | int) -> str:
+        if key in ("author", "editor"):
+            return " and ".join(value)  # type: ignore[arg-type]
+        if key in ("keywords", ):
+            return ", ".join(value)  # type: ignore[arg-type]
+        if key in ("year", ):
+            return str(value)
+        return value  # type: ignore[return-value]
 
     def __str__(self: "Entry") -> str:
         entry = "@%s{%s,\n" % (self.category, self.key)  # noqa: UP031
-        entry += "issn = {%s},\n" % (self.issn)  # noqa: UP031
-        for attr in dir(self):
-            if attr[:2] == "__":
-                continue
-            if attr in ("category", "key", "issn"):
-                continue
-
+        for attr in (  # I could have used `dir`, but I want to order the output
+            "title",
+            "year",
+            "author",
+            "journal",
+            "doi",
+            "issn",
+            "abstract",
+            "url",
+            "pages",
+            "note",
+            "series",
+            "publisher",
+            "volume",
+            "number",
+            "keywords",
+            "editor",
+        ):
             value = getattr(self, attr)
             if value is None:
                 continue
-
-            if attr in ("author", "editor"):
-                entry += attr + " = {" + " and ".join(value) + "},\n"
-            elif attr == "keywords":
-                value = attr + " = {" + ", ".join(value) + "},\n"
-            else:
-                entry += attr + " = {%s},\n" % value  # noqa: UP031
+            entry += attr + " = {%s},\n" % self.value2string(attr, value)  # noqa: UP031
         entry = entry.removesuffix(",\n")
         return entry + "\n}\n"
 
@@ -49,6 +78,3 @@ class Element:
     key: str
     value: str
 
-def parse_element(element: str) -> "Element":
-    key, value = map(str.strip, element.split("=", 1))
-    return Element(key=key, value=value)
