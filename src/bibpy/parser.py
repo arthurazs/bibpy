@@ -1,9 +1,11 @@
+import logging
+from bibpy.model import Entry, Element
 
-from model import Entry, Element
+logger = logging.getLogger(__name__)
 
 def next_element(text: str) -> "tuple[Element, str]":
     key, remainder = map(str.strip, text.split("=", 1))
-    key = key.removeprefix(",\n")
+    key = key.removeprefix(",").strip()
     if remainder[0] != "{":
         msg = "Element value does not start with {"
         raise ValueError(msg)
@@ -17,9 +19,11 @@ def next_element(text: str) -> "tuple[Element, str]":
             remainder = remainder[index + 1:]
             break
     value = value.removeprefix("{").removesuffix("}")
-    if remainder == "\n}":
+    if remainder in ("\n}", ",}", "  }"):
         remainder = ""
-    return Element(key=key, value=value), remainder
+    elif len(remainder.strip().rsplit("}", 1)[0]) < 1:  # scopus
+        remainder = ""
+    return Element(key=key.lower(), value=value), remainder
 
 def parse_entry(text: str) -> "Entry":
     category, remainder = text.split("{", 1)
@@ -44,9 +48,17 @@ def parse_entry(text: str) -> "Entry":
                 value = int(value)
             except ValueError:
                 pass
+        if key == "pmid":
+            value = int(value)
         elif key in ("author", "editor"):
             value = tuple(map(str.strip, value.split("and")))
-        elif key == "keywords":
-            value = tuple(map(str.strip, value.split(",")))
+        elif key in ("author_keywords", "keywords"):
+            comma = value.count(","), ","
+            semicollon = value.count(";"), ";"
+            value = tuple(map(str.strip, value.split(max(comma, semicollon)[1])))
+        elif key in ("affiliations", "correspondence_address"):
+            value = tuple(map(str.strip, value.split(";")))
+        elif key == "type":
+            key = "type2"
         setattr(entry, key, value)
     return entry

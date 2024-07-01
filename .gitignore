@@ -1,5 +1,9 @@
 # python
 __pycache__
+*.egg-info
 
 # latex
 *.bib
+
+# R
+data

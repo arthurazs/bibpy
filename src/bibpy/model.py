@@ -1,5 +1,9 @@
-
+import logging
 from dataclasses import dataclass
+
+logger = logging.getLogger(__name__)
+
+
 @dataclass(slots=True)
 class Entry:
     category: str
@@ -14,6 +18,21 @@ class Entry:
     series: str | None = None
     publisher: str | None = None
     abstract: str | None = None
+    issue_date: str | None = None
+    address: str | None = None
+    month: str | None = None
+    affiliations: str | None = None
+    author_keywords: str | None = None
+    correspondence_address: str | None = None
+    language: str | None = None
+    abbrev_source_title: str | None = None
+    type2: str | None = None
+    publication_stage: str | None = None
+    source: str | None = None
+    coden: str | None = None
+    pmid: int | None = None
+    articleno: int | None = None
+    numpages: int | None = None
     volume: int | str | None = None
     year: int | None = None
     number: int | None = None
@@ -29,14 +48,14 @@ class Entry:
                 continue
             if attr in ("category", "key", "issn"):
                 continue
-            
+
             value = getattr(self, attr)
             if value is None:
                 continue
 
             if attr in ("author", "editor"):
                 entry += attr + " = {" + " and ".join(value) + "},\n"
-            elif attr == "keywords":
+            elif attr in ("keywords", "author_keywords", "keywords", "affiliations", "correspondence_address"):
                 value = attr + " = {" + ", ".join(value) + "},\n"
             else:
                 entry += attr + " = {%s},\n" % value
