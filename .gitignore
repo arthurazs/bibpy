@@ -1,9 +1,14 @@
 # python
 __pycache__
+.venv
+build
 *.egg-info
 
 # latex
 *.bib
+
+# dev
+.*_cache
 
 # R
 data

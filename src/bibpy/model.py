@@ -43,7 +43,6 @@ class Entry:
     def __str__(self: "Entry") -> str:
         entry = "@%s{%s,\n" % (self.category, self.key)
         entry += "issn = {%s},\n" % (self.issn)
-        for attr in dir(self):
             if attr[:2] == "__":
                 continue
             if attr in ("category", "key", "issn"):
@@ -59,7 +58,6 @@ class Entry:
                 value = attr + " = {" + ", ".join(value) + "},\n"
             else:
                 entry += attr + " = {%s},\n" % value
-        entry = entry.removesuffix(",\n")
         return entry + "\n}\n"
 
 @dataclass(kw_only=True, slots=True, frozen=True)
@@ -70,3 +68,6 @@ class Element:
 def parse_element(element: str) -> "Element":
     key, value = map(str.strip, element.split("=", 1))
     return Element(key=key, value=value)
+
+        for attr in dir(self):
+        entry = entry.removesuffix(",\n")
