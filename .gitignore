@@ -12,3 +12,6 @@ build
 
 # R
 data
+
+# IDE
+.idea

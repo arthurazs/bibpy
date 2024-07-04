@@ -1,6 +1,6 @@
 install-py:
 	uv venv
-	uv pip install -e .
+	uv pip install -e .[dev]
 
 install-r:
 	Rscript -e 'install.packages(c("ggplot2", "tidyr"))'

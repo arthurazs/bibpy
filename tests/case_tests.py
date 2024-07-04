@@ -62,7 +62,7 @@ IEEE_STR = r"""
 """
 
 SCI_DIR_STR = r"""
-@article{WANG2021197,
+@article{1,
 title = {Research and implementation of virtual circuit test tool for smart substations},
 journal = {Procedia Computer Science},
 volume = {183},
@@ -75,7 +75,7 @@ url = {https://www.sciencedirect.com/science/article/pii/S1877050921005159},
 author = {Jin Wang and Zengkai Wang},
 keywords = {Smart substation, IEC61850, virtual circuit},
 }
-@article{KRAKOWSKI2021107000,
+@article{2,
 title = {Comparative analysis of the DAQ cards-based and the IEC 61850-based real time simulations in the matlab/simulink environment for power system protections},
 journal = {Electric Power Systems Research},
 volume = {192},
@@ -93,7 +93,7 @@ SCOPUS_STR = r"""
 Scopus
 EXPORT DATE: 02 July 2024
 
-@ARTICLE{Chamana2023,
+@ARTICLE{1,
 	author = {Chamana, Manohar and Bhatta, Rabindra and Schmitt, Konrad and Shrestha, Rajendra and Bayne, Stephen},
 	title = {An Integrated Testbed for Power System Cyber-Physical Operations Training},
 	year = {2023},
@@ -115,7 +115,7 @@ EXPORT DATE: 02 July 2024
 	note = {Cited by: 3; All Open Access, Gold Open Access}
 }
 
-@ARTICLE{Tabish202417114,
+@ARTICLE{2,
 	author = {Tabish, Nimra and Chaur-Luh, Tsai},
 	title = {Maritime Autonomous Surface Ships: A Review of Cybersecurity Challenges, Countermeasures, and Future Perspectives},
 	year = {2024},
