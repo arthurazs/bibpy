@@ -36,7 +36,6 @@ def next_entry(bib: "StringIO") -> str:
         counter += is_open
         counter -= char == "}"
         
-        if started or is_empty:
-            end = counter == 0 or is_empty
+        end = is_empty or (started and counter == 0)
 
     return entry
