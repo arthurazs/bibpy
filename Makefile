@@ -1,3 +1,4 @@
+# prod
 install-py:
 	uv venv
 	uv pip install -e .[dev]
@@ -13,3 +14,18 @@ analyse:
 
 plot:
 	Rscript scripts/pub_date.r
+
+
+# dev
+mypy:
+	.venv/bin/mypy .
+
+ruff:
+	.venv/bin/ruff check .
+
+pytest:
+	.venv/bin/pytest
+
+ruff-fix:
+	.venv/bin/ruff check --fix .
+
