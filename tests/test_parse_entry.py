@@ -145,3 +145,4 @@ def test_parse_entry(case: str, expected_tell: int) -> None:
     parsed_entry = parse_entry(entry)
     assert parsed_entry == Entry("article", "1")
     assert entry.tell() == expected_tell + 2
+

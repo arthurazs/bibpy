@@ -15,3 +15,4 @@ class Entry:
     doi: str | None = None
     issn: str | None = None
     month: str | None = None
+
