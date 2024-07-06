@@ -1,12 +1,12 @@
+import io
 import logging
 import os
 from bibpy.model import Entry
-from io import StringIO
 
 logger = logging.getLogger(__name__)
 
 
-def get_category(entry: "StringIO") -> str:
+def get_category(entry: "io.TextIOWrapper") -> str:
     category = ""
     found_at = False  # looking for @ symbol
     while True:
@@ -25,7 +25,7 @@ def get_category(entry: "StringIO") -> str:
     return category.lower()
 
 
-def get_key(entry: "StringIO") -> str:
+def get_key(entry: "io.TextIOWrapper") -> str:
     key = ""
     while True:
         char = entry.read(1)
@@ -37,7 +37,7 @@ def get_key(entry: "StringIO") -> str:
     return key
 
 
-def get_element_key(entry: "StringIO") -> str:
+def get_element_key(entry: "io.TextIOWrapper") -> str:
     key = ""
     while True:
         char = entry.read(1)
@@ -49,7 +49,7 @@ def get_element_key(entry: "StringIO") -> str:
     return key.removeprefix(",").strip().lower()
 
 
-def get_element_value(entry: "StringIO") -> str:
+def get_element_value(entry: "io.TextIOWrapper") -> str:
     value = ""
     started = False
     counter = 0
@@ -73,19 +73,19 @@ def get_element_value(entry: "StringIO") -> str:
     return value
 
 
-def get_next_element(entry: "StringIO") -> tuple[str, str]:
+def get_next_element(entry: "io.TextIOWrapper") -> tuple[str, str]:
     return get_element_key(entry), get_element_value(entry)
 
 
-def parse_entry(entry: "StringIO") -> "Entry":
+def parse_entry(entry: "io.TextIOWrapper") -> "Entry":
     category = get_category(entry)
     key = get_key(entry)
     # element_key, element_value = get_next_element(entry)
     return Entry(category=category, key=key)
 
 
-def next_entry(bib: "StringIO") -> "StringIO":
-    entry = StringIO()
+def next_entry(bib: "io.TextIOWrapper") -> "io.StringIO":
+    entry = io.StringIO()
     counter = 0
     started = False
     end = False
@@ -106,3 +106,4 @@ def next_entry(bib: "StringIO") -> "StringIO":
 
     entry.seek(0, os.SEEK_SET)  # rewind to the start of the stream
     return entry
+

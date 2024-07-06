@@ -1,9 +1,11 @@
-import sys
-
-from pathlib import Path
 import logging
+import sys
+from pathlib import Path
+
 from rich.logging import RichHandler
+
 from bibpy import parser
+
 log_handler = RichHandler(rich_tracebacks=True, omit_repeated_times=False)
 logging.basicConfig(level=logging.INFO, format="%(message)s", handlers=[log_handler])
 logger = logging.getLogger(__name__)
@@ -27,3 +29,4 @@ if argv == "-d":
     logger.error(counter)
 else:
     logger.error("Expected -m for merge, or -a for analyse")
+
