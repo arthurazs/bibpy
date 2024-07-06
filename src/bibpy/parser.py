@@ -1,6 +1,7 @@
 import io
 import logging
 import os
+
 from bibpy.model import Entry
 
 logger = logging.getLogger(__name__)
@@ -106,4 +107,12 @@ def next_entry(bib: "io.TextIOWrapper") -> "io.StringIO":
 
     entry.seek(0, os.SEEK_SET)  # rewind to the start of the stream
     return entry
+
+
+def is_empty(buffer: "io.TextIOWrapper") -> bool:
+    cookie = buffer.tell()
+    buffer.seek(0, os.SEEK_END)
+    empty = cookie == buffer.tell()
+    buffer.seek(cookie, os.SEEK_SET)
+    return empty
 

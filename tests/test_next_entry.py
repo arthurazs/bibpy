@@ -1,7 +1,7 @@
 from io import StringIO
 
 import pytest
-from bibpy.parser import next_entry
+from bibpy.parser import next_entry, is_empty
 
 from tests.case_tests import ACM_STR, IEEE_STR, SCI_DIR_STR, SCOPUS_STR
 
@@ -30,24 +30,25 @@ def test_next_entry(case: str, expected_tell1: int, expected_tell2: int) -> None
 
     entry = next_entry(file)
     assert entry.tell() == 0
-    assert entry.getvalue() == expected_entry1
+    assert not is_empty(entry)
+    assert entry.read() == expected_entry1
     assert file.tell() == expected_tell1
 
     entry = next_entry(file)
     assert entry.tell() == 0
-    assert entry.getvalue() == expected_entry2
+    assert not is_empty(entry)
+    assert entry.read() == expected_entry2
     assert file.tell() == expected_tell2
 
     entry = next_entry(file)
     assert entry.tell() == 0
-    assert entry.getvalue() == expected_entry3
+    assert not is_empty(entry)
+    assert entry.read() == expected_entry3
     assert file.tell() == expected_tell2 + 1
 
     entry = next_entry(file)
     assert entry.tell() == 0
-    assert entry.getvalue() == ""
+    assert is_empty(entry)
+    assert entry.read() == ""
     assert file.tell() == expected_tell2 + 1
 
-
-def test_last_entry() -> None:
-    assert False, "how do I know if I've reached the end of the file?"
