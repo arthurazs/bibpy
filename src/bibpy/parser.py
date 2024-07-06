@@ -81,8 +81,16 @@ def get_next_element(entry: "io.TextIOWrapper") -> tuple[str, str]:
 def parse_entry(entry: "io.TextIOWrapper") -> "Entry":
     category = get_category(entry)
     key = get_key(entry)
-    # element_key, element_value = get_next_element(entry)
-    return Entry(category=category, key=key)
+    parsed_entry = Entry(category=category, key=key)
+
+    while True:
+        if is_empty(entry):
+            break
+        element_key, element_value = get_next_element(entry)
+        if element_key == "}" and element_value == "":
+            break
+        parsed_entry.add_element(element_key, element_value)
+    return parsed_entry
 
 
 def next_entry(bib: "io.TextIOWrapper") -> "io.StringIO":
