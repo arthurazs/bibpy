@@ -37,20 +37,50 @@ class Entry:
     coden: str | None = None
     pmid: int | None = None
 
+    @staticmethod
+    def _parse_value(key: str, value: str) -> str | tuple[str, ...] | None | int:
+        if key == "author":
+            return tuple(map(str.strip, value.split("and")))
+        if key in ("keywords", "author_keywords"):
+            comma = value.count(",")
+            sep = ",;"[comma < value.count(";")]
+            return tuple(map(str.strip, value.split(sep)))
+        if key in ("affiliations", "correspondence_address"):
+            return tuple(map(str.strip, value.split(";")))
+        if key in ("year", "volume", "number", "numpages"):
+            return int(value)
+        return value
+
     def add_element(self: "Entry", key: str, value: str) -> None:
         try:
             if key == "type":
                 if self.category != value.lower():
                     logger.warning('Entry category "%s" differs from element type "%s"', self.category, value.lower())
             else:
-                setattr(self, key, value)
+                parsed_value = self._parse_value(key, value)
+                setattr(self, key, parsed_value)
         except AttributeError:
             logger.warning('Entry doesn\'t have an attribute "%s", skipping value "%s"', key, value)
             raise
 
     def __str__(self: "Entry") -> str:
-        entry = "@%s{%s,\n" % (self.category, self.key)
+        entry = "@%s{%s,\n" % (self.category, self.key)  # noqa: UP031
         for attr in dir(self):
-            pass
-        return entry
+            if attr[0] == "_":
+                continue
+            if attr in ("add_element", "category", "key", "type"):
+                continue
+            value = getattr(self, attr)
+            if value is None:
+                continue
+            if attr == "author":
+                parsed_value = " and ".join(value)
+            elif attr in ("keywords", "affiliations", "author_keywords", "correspondence_address"):
+                parsed_value = "; ".join(value)
+            elif attr in ("year", "volume", "number", "numpages"):
+                parsed_value = str(value)
+            else:
+                parsed_value = value
+            entry += attr + " = {" + parsed_value + "},\n"
+        return entry.removesuffix(",\n") + "\n}"
 
