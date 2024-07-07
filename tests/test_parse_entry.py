@@ -143,6 +143,8 @@ def test_parse_entry(case: str, expected_tell: int) -> None:
     file = StringIO(case)
     entry = next_entry(file)
     parsed_entry = parse_entry(entry)
-    assert parsed_entry == Entry("article", "1")
+    print(repr(parsed_entry))
+    print(repr(Entry(category="article", key="1")))
+    assert parsed_entry == Entry(category="article", key="1")
     assert entry.tell() == expected_tell + 2
 

@@ -1,7 +1,7 @@
 from io import StringIO
 
 import pytest
-from bibpy.parser import next_entry, is_empty
+from bibpy.parser import is_empty, next_entry
 
 from tests.case_tests import ACM_STR, IEEE_STR, SCI_DIR_STR, SCOPUS_STR
 

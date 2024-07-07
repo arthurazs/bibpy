@@ -48,3 +48,9 @@ class Entry:
             logger.warning('Entry doesn\'t have an attribute "%s", skipping value "%s"', key, value)
             raise
 
+    def __str__(self: "Entry") -> str:
+        entry = "@%s{%s,\n" % (self.category, self.key)
+        for attr in dir(self):
+            pass
+        return entry
+
