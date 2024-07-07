@@ -14,8 +14,8 @@ class Entry:
     journal: str | None = None
     year: int | None = None
     keywords: tuple[str, ...] | None = None
-    volume: int | None = None
-    number: int | None = None
+    volume: int | str | None = None
+    number: int | str | None = None
     pages: str | None = None
     doi: str | None = None
     issn: str | None = None
@@ -39,6 +39,8 @@ class Entry:
 
     @staticmethod
     def _parse_value(key: str, value: str) -> str | tuple[str, ...] | None | int:
+        if value == "":
+            return None
         if key == "author":
             return tuple(map(str.strip, value.split("and")))
         if key in ("keywords", "author_keywords"):
@@ -48,7 +50,11 @@ class Entry:
         if key in ("affiliations", "correspondence_address"):
             return tuple(map(str.strip, value.split(";")))
         if key in ("year", "volume", "number", "numpages"):
-            return int(value)
+            try:
+                return int(value)
+            except ValueError:
+                logger.warning('Could not parse "%s" = "%s" to int, falling back to str', key, value)
+                return value
         return value
 
     def add_element(self: "Entry", key: str, value: str) -> None:
@@ -57,7 +63,11 @@ class Entry:
                 if self.category != value.lower():
                     logger.warning('Entry category "%s" differs from element type "%s"', self.category, value.lower())
             else:
-                parsed_value = self._parse_value(key, value)
+                try:
+                    parsed_value = self._parse_value(key, value)
+                except ValueError:
+                    logger.error(self.title)
+                    raise
                 setattr(self, key, parsed_value)
         except AttributeError:
             logger.warning('Entry doesn\'t have an attribute "%s", skipping value "%s"', key, value)

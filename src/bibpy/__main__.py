@@ -69,8 +69,8 @@ elif argv == "-d":
                     parsed_entry = parser.parse_entry(entry)
                     counter += 1
     elapsed = perf_counter_ns() - start
-    logger.info("Took     %.3f ms to parse %d entries", elapsed / NS2MS, counter)
-    logger.info("Averaged %.3f us per entry", (elapsed / NS2US) / counter)
+    logger.info("Took     %7.3f ms to parse %d entries", elapsed / NS2MS, counter)
+    logger.info("Averaged %7.3f ms per entry", (elapsed / NS2MS) / counter)
 else:
     logger.error("Expected -m for merge, or -a for analyse")
 
