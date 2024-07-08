@@ -37,6 +37,10 @@ class Entry:
     coden: str | None = None
     pmid: int | None = None
 
+    @property
+    def code(self: "Entry") -> str:
+        return self.key + "-" + (self.issn if self.issn else "None") + "-" + (self.doi if self.doi else "None")
+
     @staticmethod
     def _parse_value(key: str, value: str) -> str | tuple[str, ...] | None | int:
         if value == "":
@@ -78,7 +82,7 @@ class Entry:
         for attr in dir(self):
             if attr[0] == "_":
                 continue
-            if attr in ("add_element", "category", "key", "type"):
+            if attr in ("add_element", "category", "key", "type", "code"):
                 continue
             value = getattr(self, attr)
             if value is None:

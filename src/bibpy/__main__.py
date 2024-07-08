@@ -2,10 +2,14 @@ import logging
 import sys
 from pathlib import Path
 from time import perf_counter_ns
+from typing import TYPE_CHECKING
 
 from rich.logging import RichHandler
 
 from bibpy import parser
+
+if TYPE_CHECKING:
+    from bibpy.model import Entry
 
 log_handler = RichHandler(rich_tracebacks=True, omit_repeated_times=False)
 logging.basicConfig(level=logging.INFO, format="%(message)s", handlers=[log_handler])
@@ -23,54 +27,34 @@ TRUNC_AT = 21
 
 
 argv = sys.argv[1]
-if argv == "-p":
-    logger.info("Starting...\n")
-    counter_parse = 0
-    start_parse = perf_counter_ns()
-    for folder in INPUT_PATH.iterdir():
-        counter_folder = 0
-        start_folder = perf_counter_ns()
-        logger.info('Parsing files from "%s/"...', folder)
-        for file in folder.iterdir():
-            with file.open(encoding="utf8") as bib:
-                counter_file = 0
-                start_file = perf_counter_ns()
-                while True:
-                    entry = parser.next_entry(bib)
-                    if parser.is_empty(entry):
-                        break
-                    parsed_entry = parser.parse_entry(entry)
-                    counter_file += 1
-                msg = '"%s" took' % (("..." + file.name[-TRUNC_AT:]) if len(file.name) > TRUNC_AT else file.name)
-                logger.info(
-                    "%-32s %8.3f ms to parse %4d entries...",
-                    msg, (perf_counter_ns() - start_file) / NS2MS, counter_file,
-                )
-                counter_folder += counter_file
-        msg = f"{folder} took"
-        logger.info(
-            "%-32s %8.3f ms to parse %4d entries.\n",
-            msg, (perf_counter_ns() - start_folder) / NS2MS, counter_folder,
-        )
-        counter_parse += counter_folder
-    msg = "Took"
-    logger.info("%-32s %8.3f ms to parse %4d entries!", msg, (perf_counter_ns() - start_parse) / NS2MS, counter_parse)
-elif argv == "-d":
-    logger.info("Calculating...")
+if argv == "-m":
+    logger.info("Opening folders...")
     counter = 0
     start = perf_counter_ns()
     for folder in INPUT_PATH.iterdir():
+        logger.info("Opening %s...", folder)
+        entries: dict[str, "Entry"] = {}
         for file in folder.iterdir():
-            with file.open(encoding="utf8") as bib:
+            logger.info("Parsing %s...", file)
+            with file.open(encoding="utf8") as bib_input:
                 while True:
-                    entry = parser.next_entry(bib)
+                    entry = parser.next_entry(bib_input)
                     if parser.is_empty(entry):
                         break
                     parsed_entry = parser.parse_entry(entry)
+                    if parsed_entry.code in entries:
+                        logger.warning("Duplicated entry, skipping %s", parsed_entry.code)
+                        logger.debug(entries[parsed_entry.code])
+                        logger.debug(parsed_entry)
+                    else:
+                        entries[parsed_entry.code] = parsed_entry
                     counter += 1
+        with (OUTPUT_PATH / folder.name).with_suffix(".bib").open("w") as bib_output:
+            bib_output.writelines(str(entry) + "\n" for entry in entries.values())
+        logger.info("")
     elapsed = perf_counter_ns() - start
     logger.info("Took     %7.3f ms to parse %d entries", elapsed / NS2MS, counter)
     logger.info("Averaged %7.3f ms per entry", (elapsed / NS2MS) / counter)
 else:
-    logger.error("Expected -m for merge, or -a for analyse")
+    logger.error("Expected -m for merge")
 

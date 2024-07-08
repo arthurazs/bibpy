@@ -42,7 +42,7 @@ def test_next_entry(case: str, expected_tell1: int, expected_tell2: int) -> None
 
     entry = next_entry(file)
     assert entry.tell() == 0
-    assert not is_empty(entry)
+    assert is_empty(entry)
     assert entry.read() == expected_entry3
     assert file.tell() == expected_tell2 + 1
 

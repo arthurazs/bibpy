@@ -9,9 +9,6 @@ install-r:
 merge:
 	.venv/bin/python -m bibpy -m
 
-analyse:
-	.venv/bin/python -m bibpy -a
-
 plot:
 	Rscript scripts/pub_date.r
 

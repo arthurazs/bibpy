@@ -5,6 +5,7 @@ import os
 from bibpy.model import Entry
 
 logger = logging.getLogger(__name__)
+EMPTY_CHARS = " \n\t\r"
 
 
 def get_category(entry: "io.TextIOWrapper") -> str:
@@ -117,10 +118,22 @@ def next_entry(bib: "io.TextIOWrapper") -> "io.StringIO":
     return entry
 
 
-def is_empty(buffer: "io.TextIOWrapper") -> bool:
+def end_of_file(buffer: "io.TextIOWrapper") -> bool:
     cookie = buffer.tell()
     buffer.seek(0, os.SEEK_END)
     empty = cookie == buffer.tell()
     buffer.seek(cookie, os.SEEK_SET)
     return empty
 
+def is_empty(buffer: "io.TextIOWrapper") -> bool:
+    cookie = buffer.tell()
+    flag = True
+    while True:
+        char = buffer.read(1)
+        if char not in EMPTY_CHARS:
+            flag = False
+            break
+        if char == "":
+            break
+    buffer.seek(cookie, os.SEEK_SET)
+    return flag

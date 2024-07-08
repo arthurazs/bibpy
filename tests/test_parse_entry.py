@@ -1,13 +1,17 @@
+import os
 from io import StringIO
 from typing import TYPE_CHECKING
 
 import pytest
 from bibpy.parser import (
+    EMPTY_CHARS,
+    end_of_file,
     get_category,
     get_element_key,
     get_element_value,
     get_key,
     get_next_element,
+    is_empty,
     next_entry,
     parse_entry,
 )
@@ -29,6 +33,7 @@ from tests.case_tests import (
 
 if TYPE_CHECKING:
     from bibpy.model import Entry
+
 
 TEST_DATA_HEADER = (
     # case, expected_tell
@@ -178,4 +183,13 @@ def test_to_string(case: str, expected_str: str) -> None:
     entry = next_entry(file)
     parsed_entry = parse_entry(entry)
     assert str(parsed_entry) == expected_str
+
+def test_end_of_file() -> None:
+    entry = next_entry(StringIO(EMPTY_CHARS))
+    entry.seek(0, os.SEEK_END)
+    assert end_of_file(entry)
+
+def test_empty_entry() -> None:
+    entry = next_entry(StringIO(EMPTY_CHARS))
+    assert is_empty(entry)
 
