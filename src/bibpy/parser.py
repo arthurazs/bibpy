@@ -1,94 +1,139 @@
+import io
 import logging
-from bibpy.model import Entry, Element
+import os
+
+from bibpy.model import Entry
 
 logger = logging.getLogger(__name__)
-
-if TYPE_CHECKING:
-    from io import TextIOBase
-
-logger = logging.getLogger(__name__)
+EMPTY_CHARS = " \n\t\r"
 
 
-def next_element(text: str) -> "tuple[Element, str]":
-    key, remainder = map(str.strip, text.split("=", 1))
-    key = key.removeprefix(",").strip()
-    if remainder[0] != "{":
-        msg = "Element value does not start with {"
-        raise ValueError(msg)
-    counter = 0
+def get_category(entry: "io.TextIOWrapper") -> str:
+    category = ""
+    found_at = False  # looking for @ symbol
+    while True:
+        char = entry.read(1)
+        if char == "":
+            break
+
+        if not found_at:
+            found_at = char == "@"
+            continue
+
+        if char == "{":
+            break
+
+        category += char
+    return category.lower()
+
+
+def get_key(entry: "io.TextIOWrapper") -> str:
+    key = ""
+    while True:
+        char = entry.read(1)
+
+        if char in ("", ","):
+            break
+
+        key += char
+    return key
+
+
+def get_element_key(entry: "io.TextIOWrapper") -> str:
+    key = ""
+    while True:
+        char = entry.read(1)
+
+        if char in ("", "="):
+            break
+
+        key += char
+    return key.removeprefix(",").strip().lower()
+
+
+def get_element_value(entry: "io.TextIOWrapper") -> str:
     value = ""
-    for index, char in enumerate(remainder):
+    started = False
+    counter = 0
+    while True:
+        char = entry.read(1)
+        if char == "":
+            break
+
+        if not started:
+            if char == "{":
+                started = True
+                counter += 1
+            continue
+
         counter += char == "{"
         counter -= char == "}"
-        value += char
-        if counter == 0:
-            remainder = remainder[index + 1:]
+        if started and counter == 0:
             break
-    value = value.removeprefix("{").removesuffix("}")
-    if remainder in ("\n}", ",}", "  }"):
-        remainder = ""
-    elif len(remainder.strip().rsplit("}", 1)[0]) < 1:  # scopus
-        remainder = ""
-    return Element(key=key.lower(), value=value), remainder
 
-def parse_entry(text: str) -> "Entry":
-    category, remainder = text.split("{", 1)
-    category = category.strip().removeprefix("@")
-    key, remainder = remainder.split("\n", 1)
-    key = key.strip().removesuffix(",")
+        value += char
+    return value
 
-    elements = {}
-    while remainder:
-        element, remainder = next_element(remainder)
-        elements[element.key] = element.value
 
-    if remainder != "":
-        msg = f"Expected empty remainder, got {remainder}"
-        raise ValueError(msg)
+def get_next_element(entry: "io.TextIOWrapper") -> tuple[str, str]:
+    return get_element_key(entry), get_element_value(entry)
 
-    entry = Entry(category=category, key=key, issn=elements.pop("issn"))
 
-    for key, value in elements.items():
-        if key in ("year",):
-            try:
-                value = int(value)
-            except ValueError:
-                pass
-        if key == "pmid":
-            value = int(value)
-        elif key in ("author", "editor"):
-            value = tuple(map(str.strip, value.split("and")))
-        elif key in ("author_keywords", "keywords"):
-            comma = value.count(","), ","
-            semicollon = value.count(";"), ";"
-            value = tuple(map(str.strip, value.split(max(comma, semicollon)[1])))
-        elif key in ("affiliations", "correspondence_address"):
-            value = tuple(map(str.strip, value.split(";")))
-        elif key == "type":
-            key = "type2"
-        setattr(entry, key, value)
+def parse_entry(entry: "io.TextIOWrapper") -> "Entry":
+    category = get_category(entry)
+    key = get_key(entry)
+    parsed_entry = Entry(category=category, key=key)
+
+    while True:
+        if is_empty(entry):
+            break
+        element_key, element_value = get_next_element(entry)
+        if element_key == "}" and element_value == "":
+            break
+        parsed_entry.add_element(element_key, element_value)
+    return parsed_entry
+
+
+def next_entry(bib: "io.TextIOWrapper") -> "io.StringIO":
+    entry = io.StringIO()
+    counter = 0
+    started = False
+    end = False
+
+    while not end:
+        char = bib.read(1)
+        entry.write(char)
+
+        is_empty = char == ""
+        is_open = char == "{"
+        if not started:
+            started = is_open
+
+        counter += is_open
+        counter -= char == "}"
+
+        end = is_empty or (started and counter == 0)
+
+    entry.seek(0, os.SEEK_SET)  # rewind to the start of the stream
     return entry
 
-def load_entries(file: "TextIOBase") -> tuple[dict[str, "Entry"], int]:
-    entries = {}
-    entry_text = ""
-    counter = 0
-    duplicate = 0
-    for row in file:
-        counter += row.count("{")
-        counter -= row.count("}")
-        entry_text += row
-        if counter == 0:
-            entry = parse_entry(entry_text)
-            if entry.code not in entries:
-                entries[entry.code] = entry
-            else:
-                duplicate += 1
-                logger.debug("Duplicate entry found: %s", entry.code)
-                previous = entries[entry.code]
-                current = entry
-                if previous != current:
-                    logger.error("Duplicate entry differs\nPrevious\n%s\n\nCurrent\n%s", previous, current)
-            entry_text = ""
-            counter = 0
-    return entries, duplicate
+
+def end_of_file(buffer: "io.TextIOWrapper") -> bool:
+    cookie = buffer.tell()
+    buffer.seek(0, os.SEEK_END)
+    empty = cookie == buffer.tell()
+    buffer.seek(cookie, os.SEEK_SET)
+    return empty
+
+def is_empty(buffer: "io.TextIOWrapper") -> bool:
+    cookie = buffer.tell()
+    flag = True
+    while True:
+        char = buffer.read(1)
+        if char not in EMPTY_CHARS:
+            flag = False
+            break
+        if char == "":
+            break
+    buffer.seek(cookie, os.SEEK_SET)
+    return flag

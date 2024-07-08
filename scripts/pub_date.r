@@ -9,3 +9,4 @@ pub_date |>
     theme(strip.background = element_blank(), strip.placement = "outside")
 
 ggsave("data/pub_date.pdf")
+
