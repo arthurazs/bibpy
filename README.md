@@ -28,7 +28,7 @@ The parsed files will be placed at `data/output/`.
 
 ## Quickstart
 
-Tested on Ubuntu 22.04.4 LTS.
+Tested on Ubuntu 22.04.1 LTS with Python 3.12.3.
 
 ```bash
 git clone https://github.com/arthurazs/bibpy
