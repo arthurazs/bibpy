@@ -1,3 +1,5 @@
+bin := .venv/bin
+
 # prod
 install-py:
 	uv venv
@@ -7,7 +9,7 @@ install-r:
 	Rscript -e 'install.packages(c("ggplot2", "tidyr"))'
 
 merge:
-	.venv/bin/python -m bibpy -m
+	$(bin)/python -m bibpy -m
 
 plot:
 	Rscript scripts/pub_date.r
@@ -15,14 +17,14 @@ plot:
 
 # dev
 mypy:
-	.venv/bin/mypy .
+	$(bin)/mypy .
 
 ruff:
-	.venv/bin/ruff check .
+	$(bin)/ruff check .
 
 pytest:
-	.venv/bin/pytest
+	$(bin)/pytest
 
 ruff-fix:
-	.venv/bin/ruff check --fix .
+	$(bin)/ruff check --fix .
 
