@@ -11,6 +11,9 @@ install-r:
 merge:
 	$(bin)/python -m bibpy -m
 
+debug:
+	$(bin)/python -m bibpy -d
+
 plot:
 	Rscript scripts/pub_date.r
 

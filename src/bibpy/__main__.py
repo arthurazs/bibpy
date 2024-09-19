@@ -27,7 +27,33 @@ TRUNC_AT = 21
 
 
 argv = sys.argv[1]
-if argv == "-m":
+if argv == "-d":
+    logger.info("Opening folders...")
+    counter = 0
+    start = perf_counter_ns()
+    for folder in INPUT_PATH.iterdir():
+        logger.info("Opening %s...", folder)
+        entries: dict[str, "Entry"] = {}
+        for file in folder.iterdir():
+            logger.info("Parsing %s...", file)
+            with file.open(encoding="utf8") as bib_input:
+                while True:
+                    entry = parser.next_entry(bib_input)
+                    if parser.is_empty(entry):
+                        break
+                    parsed_entry = parser.parse_entry(entry)
+                    if parsed_entry.code in entries:
+                        logger.warning("Duplicated entry, skipping %s", parsed_entry.code)
+                        logger.debug(entries[parsed_entry.code])
+                        logger.debug(parsed_entry)
+                    else:
+                        entries[parsed_entry.code] = parsed_entry
+                    counter += 1
+        logger.info("")
+    elapsed = perf_counter_ns() - start
+    logger.info("Took     %7.3f ms to parse %d entries", elapsed / NS2MS, counter)
+    logger.info("Averaged %7.3f ms per entry", (elapsed / NS2MS) / counter)
+elif argv == "-m":
     logger.info("Opening folders...")
     counter = 0
     start = perf_counter_ns()
